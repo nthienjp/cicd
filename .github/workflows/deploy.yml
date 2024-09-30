@@ -1,0 +1,35 @@
+name: CI/CD Demo
+
+on:
+  push:
+    branches:
+      - main # thuc hien tu dong o branch nay
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Test 
+        run: |
+          php -l index.php # Kiểm tra cú pháp PHP
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to cPanel
+        run: |
+          lftp -e "mirror -R . /public_html; bye" -u ${{ secrets.CPANEL_USER }},${{ secrets.CPANEL_PASSWORD }} ${{ secrets.CPANEL_HOST }}
